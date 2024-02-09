@@ -11,6 +11,7 @@ import javafx.collections.*;
 import java.util.Arrays;
 import java.util.List;
 
+//Manages all topping related methods
 class ToppingsManager {
     private Set<String> toppings;
 
@@ -22,6 +23,7 @@ class ToppingsManager {
         return new ArrayList<>(toppings);
     }
 
+    //Adds a topping to the toppings list
     public boolean addTopping(String topping) {
         if (!toppings.contains(topping)) {
             toppings.add(topping);
@@ -31,6 +33,7 @@ class ToppingsManager {
         }
     }
 
+    //Deletes a topping from the toppings list
     public boolean deleteTopping(String topping) {
         if (toppings.contains(topping)) {
             toppings.remove(topping);
@@ -40,6 +43,7 @@ class ToppingsManager {
         }
     }
 
+    //Allows the user to edit a topping in the toppings list
     public boolean updateTopping(String oldTopping, String newTopping) {
         if (toppings.contains(oldTopping) && !toppings.contains(newTopping)) {
             toppings.remove(oldTopping);
@@ -51,6 +55,7 @@ class ToppingsManager {
     }
 }
 
+//Manages all Pizza related methods 
 class PizzaManager {
     private Map<String, List<String>> pizzas;
     private ToppingsManager toppingsManager;
@@ -64,6 +69,7 @@ class PizzaManager {
         return new HashMap<>(pizzas);
     }
 
+    //Creates a pizza with the given information from the user and adds it to the list of pizzas
     public boolean createPizza(String pizzaName, List<String> toppings) {
         if (!pizzas.containsKey(pizzaName) && toppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))) {
             pizzas.put(pizzaName, toppings);
@@ -73,6 +79,7 @@ class PizzaManager {
         }
     }
 
+    //Deletes a pizza from the pizza list
     public boolean deletePizza(String pizzaName) {
         if (pizzas.containsKey(pizzaName)) {
             pizzas.remove(pizzaName);
@@ -82,6 +89,7 @@ class PizzaManager {
         }
     }
 
+    //Allows the user to edit a pizza from the list of pizzas
     public boolean updatePizza(String pizzaName, List<String> newToppings) {
         if (pizzas.containsKey(pizzaName) && newToppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))) {
             pizzas.put(pizzaName, newToppings);
@@ -91,6 +99,7 @@ class PizzaManager {
         }
     }
 
+    //Allows the user to edit the toppings on a pizza from the list of pizzas
     public boolean updatePizzaToppings(String pizzaName, List<String> addedToppings, List<String> removedToppings) {
         if (pizzas.containsKey(pizzaName) && addedToppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))
                 && removedToppings.stream().allMatch(t -> pizzas.get(pizzaName).contains(t))) {
@@ -116,6 +125,7 @@ public class PizzaManagerApp extends Application {
         launch(args);
     }
 
+    //Sets up the stage for the GUI
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Pizza Manager");
@@ -136,6 +146,7 @@ public class PizzaManagerApp extends Application {
         Button executeButton = new Button("Execute");
         executeButton.setOnAction(e -> handleUserInput(userInputField, outputTextArea));
 
+        //UI elements 
         grid.add(new Label("Menu:"), 0, 0);
         grid.add(new Label("1. List Toppings"), 0, 1);
         grid.add(new Label("2. Add Topping"), 0, 2);
@@ -160,6 +171,7 @@ public class PizzaManagerApp extends Application {
         primaryStage.show();
     }
 
+    //Takes in user input and stores it in a string 
     private void handleUserInput(TextField userInputField, TextArea outputTextArea) {
         String userInput = userInputField.getText();
 
@@ -171,6 +183,7 @@ public class PizzaManagerApp extends Application {
             return;
         }
 
+        //Execute commands from the menu depending on the users input
         switch (choice) {
             case 1:
                 outputTextArea.appendText("Available Toppings: " + String.join(", ", toppingsManager.listToppings()) + "\n");
