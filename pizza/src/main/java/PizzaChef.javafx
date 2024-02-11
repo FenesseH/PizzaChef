@@ -1,0 +1,278 @@
+/*Fenesse Haywood
+2/5/24*/
+
+import java.util.*;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+import javafx.collections.*;
+import java.util.Arrays;
+import java.util.List;
+
+//Manages all topping related methods
+class ToppingsManager {
+    private Set<String> toppings;
+
+    public ToppingsManager() {
+        toppings = new HashSet<>();
+    }
+
+    public List<String> listToppings() {
+        return new ArrayList<>(toppings);
+    }
+
+    //Adds a topping to the toppings list
+    public boolean addTopping(String topping) {
+        if (!toppings.contains(topping)) {
+            toppings.add(topping);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //Deletes a topping from the toppings list
+    public boolean deleteTopping(String topping) {
+        if (toppings.contains(topping)) {
+            toppings.remove(topping);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //Allows the user to edit a topping in the toppings list
+    public boolean updateTopping(String oldTopping, String newTopping) {
+        if (toppings.contains(oldTopping) && !toppings.contains(newTopping)) {
+            toppings.remove(oldTopping);
+            toppings.add(newTopping);
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+//Manages all Pizza related methods 
+class PizzaManager {
+    private Map<String, List<String>> pizzas;
+    private ToppingsManager toppingsManager;
+
+    public PizzaManager(ToppingsManager toppingsManager) {
+        pizzas = new HashMap<>();
+        this.toppingsManager = toppingsManager;
+    }
+
+    public Map<String, List<String>> listPizzas() {
+        return new HashMap<>(pizzas);
+    }
+
+    //Creates a pizza with the given information from the user and adds it to the list of pizzas
+    public boolean createPizza(String pizzaName, List<String> toppings) {
+        if (!pizzas.containsKey(pizzaName) && toppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))) {
+            pizzas.put(pizzaName, toppings);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //Deletes a pizza from the pizza list
+    public boolean deletePizza(String pizzaName) {
+        if (pizzas.containsKey(pizzaName)) {
+            pizzas.remove(pizzaName);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //Allows the user to edit a pizza from the list of pizzas
+    public boolean updatePizza(String pizzaName, List<String> newToppings) {
+        if (pizzas.containsKey(pizzaName) && newToppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))) {
+            pizzas.put(pizzaName, newToppings);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //Allows the user to edit the toppings on a pizza from the list of pizzas
+    public boolean updatePizzaToppings(String pizzaName, List<String> addedToppings, List<String> removedToppings) {
+        if (pizzas.containsKey(pizzaName) && addedToppings.stream().allMatch(t -> toppingsManager.listToppings().contains(t))
+                && removedToppings.stream().allMatch(t -> pizzas.get(pizzaName).contains(t))) {
+            Set<String> currentToppings = new HashSet<>(pizzas.get(pizzaName));
+            currentToppings.addAll(addedToppings);
+            currentToppings.removeAll(removedToppings);
+            pizzas.put(pizzaName, new ArrayList<>(currentToppings));
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+public class PizzaManagerApp extends Application {
+
+    private Scanner scanner = new Scanner(System.in);
+    private ToppingsManager toppingsManager = new ToppingsManager();
+    private PizzaManager pizzaManager = new PizzaManager(toppingsManager);
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    //Sets up the stage for the GUI
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Pizza Manager");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        TextArea outputTextArea = new TextArea();
+        outputTextArea.setEditable(false);
+        outputTextArea.setWrapText(true);
+        outputTextArea.setPrefColumnCount(40);
+        outputTextArea.setPrefRowCount(20);
+
+        TextField userInputField = new TextField();
+        userInputField.setPromptText("Enter your choice");
+
+        Button executeButton = new Button("Execute");
+        executeButton.setOnAction(e -> handleUserInput(userInputField, outputTextArea));
+
+        //UI elements 
+        grid.add(new Label("Menu:"), 0, 0);
+        grid.add(new Label("1. List Toppings"), 0, 1);
+        grid.add(new Label("2. Add Topping"), 0, 2);
+        grid.add(new Label("3. Delete Topping"), 0, 3);
+        grid.add(new Label("4. Update Topping"), 0, 4);
+        grid.add(new Label("5. List Pizzas"), 0, 5);
+        grid.add(new Label("6. Create Pizza"), 0, 6);
+        grid.add(new Label("7. Delete Pizza"), 0, 7);
+        grid.add(new Label("8. Update Pizza"), 0, 8);
+        grid.add(new Label("9. Update Pizza Toppings"), 0, 9);
+        grid.add(new Label("0. Exit"), 0, 10);
+
+        grid.add(new Label("User Input:"), 1, 0);
+        grid.add(userInputField, 1, 1);
+        grid.add(executeButton, 1, 2);
+
+        grid.add(new Label("Output:"), 2, 0);
+        grid.add(outputTextArea, 2, 1, 1, 10);
+
+        Scene scene = new Scene(grid, 800, 600);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    //Takes in user input and stores it in a string 
+    private void handleUserInput(TextField userInputField, TextArea outputTextArea) {
+        String userInput = userInputField.getText();
+
+        int choice;
+        try {
+            choice = Integer.parseInt(userInput);
+        } catch (NumberFormatException e) {
+            outputTextArea.appendText("Invalid input. Please enter a valid option.\n");
+            return;
+        }
+
+        //Execute commands from the menu depending on the users input
+        switch (choice) {
+            case 1:
+                outputTextArea.appendText("Available Toppings: " + String.join(", ", toppingsManager.listToppings()) + "\n");
+                break;
+            case 2:
+                System.out.print("Enter topping to add: ");
+                String newTopping = scanner.nextLine();
+                if (toppingsManager.addTopping(newTopping)) {
+                    outputTextArea.appendText("Topping added successfully.\n");
+                } else {
+                    outputTextArea.appendText("Topping already exists.\n");
+                }
+                break;
+            case 3:
+                System.out.print("Enter topping to delete: ");
+                String toppingToDelete = scanner.nextLine();
+                if (toppingsManager.deleteTopping(toppingToDelete)) {
+                    outputTextArea.appendText("Topping deleted successfully.\n");
+                } else {
+                    outputTextArea.appendText("Topping not found.\n");
+                }
+                break;
+            case 4:
+                System.out.print("Enter old topping: ");
+                String oldTopping = scanner.nextLine();
+                System.out.print("Enter new topping: ");
+                String newToppingToUpdate = scanner.nextLine();
+                if (toppingsManager.updateTopping(oldTopping, newToppingToUpdate)) {
+                  outputTextArea.appendText("Topping updated successfully.\n");
+                } else {
+                  outputTextArea.appendText("Topping not found or new topping already exists.\n");
+                }
+                break;
+            case 5:
+                outputTextArea.appendText("Existing Pizzas:\n");
+                for (Map.Entry<String, List<String>> entry : pizzaManager.listPizzas().entrySet()) {
+                  outputTextArea.appendText(entry.getKey() + ": " + entry.getValue() + "\n");
+                }
+                break;
+            case 6:
+                System.out.print("Enter pizza name: ");
+                String pizzaName = scanner.nextLine();
+                System.out.print("Enter toppings (comma-separated): ");
+                List<String> pizzaToppings = Arrays.asList(scanner.nextLine().split(","));
+                if (pizzaManager.createPizza(pizzaName, pizzaToppings)) {
+                  outputTextArea.appendText("Pizza created successfully.\n");
+                } else {
+                    outputTextArea.appendText("Pizza already exists or some toppings are invalid.\n");
+                }
+                break;
+            case 7:
+                System.out.print("Enter pizza name to delete: ");
+                String pizzaToDelete = scanner.nextLine();
+                if (pizzaManager.deletePizza(pizzaToDelete)) {
+                    outputTextArea.appendText("Pizza deleted successfully.\n");
+                } else {
+                    outputTextArea.appendText("Pizza not found.\n");
+                }
+                break;
+            case 8:
+                System.out.print("Enter pizza name to update: ");
+                String pizzaToUpdate = scanner.nextLine();
+                System.out.print("Enter new toppings (comma-separated): ");
+                List<String> newToppingsForPizza = Arrays.asList(scanner.nextLine().split(","));
+                if (pizzaManager.updatePizza(pizzaToUpdate, newToppingsForPizza)) {
+                    outputTextArea.appendText("Pizza updated successfully.\n");
+                } else {
+                    outputTextArea.appendText("Pizza not found or some toppings are invalid.\n");
+                }
+                break;
+            case 9:
+                System.out.print("Enter pizza name to update toppings: ");
+                String pizzaToUpdateToppings = scanner.nextLine();
+                System.out.print("Enter toppings to add (comma-separated): ");
+                List<String> addedToppingsForPizza = Arrays.asList(scanner.nextLine().split(","));
+                System.out.print("Enter toppings to remove (comma-separated): ");
+                List<String> removedToppingsForPizza = Arrays.asList(scanner.nextLine().split(","));
+                if (pizzaManager.updatePizzaToppings(pizzaToUpdateToppings, addedToppingsForPizza, removedToppingsForPizza)) {
+                    outputTextArea.appendText("Pizza toppings updated successfully.\n");
+                } else {
+                    outputTextArea.appendText("Pizza not found or some toppings are invalid.\n");
+                }
+                break;
+            case 0:
+                outputTextArea.appendText("Exiting program.\n");
+                System.exit(0);
+                default:
+                    outputTextArea.appendText("Invalid choice. Please enter a valid option.\n");
+                break;
+        }
+    }
+}
