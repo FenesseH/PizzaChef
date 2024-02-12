@@ -1,4 +1,4 @@
-Download code from Github repository
+Download code from Github repository and run code in valid Java compiler.
 The user will be presented with a menu of choices for them to choose from. Each choice has a label for what the choice will do:
 1 - Will show the user the current list of toppings
 2 - Will allow the user to add a topping to the list of toppings
